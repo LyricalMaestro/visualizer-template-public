@@ -1,21 +1,41 @@
 #![allow(non_snake_case, unused_macros)]
+use std::{char::MAX, fs::{self}};
+
 use proconio::input;
-use rand::prelude::*;
-use svg::node::element::{Circle, Definitions, Group, Image, Line, Style, Use};
+use svg::node::element::{Circle, Line};
+use web_sys::console::{log, trace};
+
+const MAX_TURN: u32 = 5000;
+
 
 #[derive(Clone, Debug)]
 pub struct Input {
     pub n: usize,
     pub m: usize,
-    pub a: Vec<usize>,
-    pub b: Vec<usize>,
+    pub epsilon: String,
+    pub delta: String,
+    pub start_pos: (i32, i32),
+    pub target_pos: Vec<(i32, i32)>,
+    pub walls: Vec<(i32, i32, i32, i32)>,
+    pub noises: Vec<String>,
+    pub v_noise: Vec<(i32, i32)>
 }
 
 impl std::fmt::Display for Input {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "{} {}", self.n, self.m)?;
+        writeln!(f, "{} {} {} {}", self.n, self.m, self.epsilon, self.delta)?;
+        writeln!(f, "{} {}", self.start_pos.0, self.start_pos.1)?;
         for i in 0..self.n {
-            writeln!(f, "{} {}", self.a[i], self.b[i])?;
+            writeln!(f, "{} {}", self.target_pos[i].0, self.target_pos[i].1)?;
+        }
+        for i in 0..self.m {
+            writeln!(f, "{} {} {} {}", self.walls[i].0, self.walls[i].1, self.walls[i].2, self.walls[i].3)?;
+        }
+        for i in 0.. MAX_TURN {
+            writeln!(f, "{}", self.noises[i as usize])?;
+        }
+        for i in 0.. MAX_TURN {
+            writeln!(f, "{} {}", self.v_noise[i as usize].0, self.v_noise[i as usize].1)?;
         }
         Ok(())
     }
@@ -27,11 +47,15 @@ pub fn parse_input(f: &str) -> Input {
         from f,
         n:usize,
         m: usize,
-        abs: [(usize, usize); n]
+        epsilon: String, 
+        delta: String,
+        start_pos: (i32, i32),
+        target_pos: [(i32, i32); n],
+        walls: [(i32, i32, i32, i32); m],
+        noises: [String; MAX_TURN],
+        v_noise: [(i32, i32); MAX_TURN]    
     }
-    let a = abs.iter().map(|(a, _)| *a).collect::<Vec<_>>();
-    let b = abs.iter().map(|(_, b)| *b).collect::<Vec<_>>();
-    Input { n, m, a, b }
+    Input { n, m, epsilon, delta, start_pos, target_pos, walls, noises, v_noise }
 }
 
 pub struct Output {
@@ -58,50 +82,27 @@ pub fn parse_output(f: &str, m: usize) -> Output {
 }
 
 pub fn gen(seed: u64) -> Input {
-    let mut rng = rand_chacha::ChaCha20Rng::seed_from_u64(seed);
-
-    let a = Vec::from([0, 200]);
-    let b = Vec::from([0, 200]);
-    Input { n: 2, m: 1,a, b }
-}
-
-fn get_pos(input: &Input, output: &Output, turn: usize) -> (usize, usize) {
-    if output.t[turn] == 1 {
-        // 惑星の場所を返す
-        return (input.a[output.r[turn] - 1], input.b[output.r[turn] - 1]);
-    } else {
-        // 宇宙ステーションの場所を返す
-        return (output.c[output.r[turn] - 1], output.d[output.r[turn] - 1]);
+//    eprintln!("--------");
+/*
+    let f = fs::read_to_string("./data/inA/0000.txt").unwrap();
+    let f = proconio::source::once::OnceSource::from(f.as_str());
+    input! {
+        from f,
+        n:usize,
+        m: usize,
+        epsilon: String, 
+        delta: String,
+        start_pos: (i32, i32),
+        target_pos: [(i32, i32); n],
+        walls: [(i32, i32, i32, i32); m],
+        noises: [String; MAX_TURN],
+        v_noise: [(i32, i32); MAX_TURN]    
     }
-}
-
-fn calculate_score(input: &Input, output: &Output) -> i64 {
-    let mut result: f64 = 0.;
-
-    let vv = output.v;
-    for i in 0..(output.v - 1) {
-        let base1 = output.t[i];
-        let base2 = output.t[i + 1];
-        let mut coeff = 1;
-        if base1 == 1 && base2 == 1 {
-            // 両方とも惑星
-            coeff = 25;
-        } else if (base1 == 1 && base2 == 2) || (base1 == 2 && base2 == 1) {
-            coeff = 5;
-        } else if base1 == 2 && base2 == 2 {
-            coeff = 1;
-        };
-        let (x1, y1) = get_pos(input, output, i);
-        let (x2, y2) = get_pos(input, output, i + 1);
-        let euclid = ((x1 as i32 - x2 as i32).pow(2) + (y1 as i32 - y2 as i32).pow(2)) as i32;
-        result += (euclid * coeff) as f64;
-    }
-    // log_1(&format!("result: {}, v:{}", result, output.v).into());
-
-    let mut ret = 1000 * 1000 * 1000 / (1000 as f64 + (result as f64).powf(0.5)) as i64;
-    return ret;
-
-    // return ((10.).powf(9) / (1000 + (result as f64).powf(0.5))) as usize;
+    Input { n, m, epsilon, delta, start_pos, target_pos, walls, noises, v_noise }
+    */
+    let x  = vec!["0.3".to_string(); MAX_TURN as usize];
+    let y  = vec![(-3, 8); MAX_TURN as usize];
+    Input {n:0, m:0, epsilon:"0.1".to_string(), delta:"10.0".to_string(), start_pos:(3, 8), target_pos:vec![], walls:vec![], noises:x, v_noise:y}
 }
 
 pub fn vis(input: &Input, output: &Output, turn: usize) -> (i64, String, String) {
