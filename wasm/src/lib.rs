@@ -15,6 +15,7 @@ pub struct Ret {
 
 #[wasm_bindgen]
 pub fn vis(_input: String, _output: String, turn: usize) -> Ret {
+    println!("Hello World!");
     let input = util::parse_input(&_input);
     let output = util::parse_output(&_output, input.m);
     let (score, err, svg) = util::vis(&input, &output, turn as usize);
@@ -27,7 +28,8 @@ pub fn vis(_input: String, _output: String, turn: usize) -> Ret {
 
 #[wasm_bindgen]
 pub fn get_max_turn(_input: String, _output: String) -> usize {
-    let input = util::parse_input(&_input);
-    let output = util::parse_output(&_output, input.m);
-    (output.v - 1) as usize
+    // let input = util::parse_input(&_input);
+    // let output = util::parse_output(&_output, input.m);
+    // (output.v - 1) as usize
+    12345 as usize
 }
