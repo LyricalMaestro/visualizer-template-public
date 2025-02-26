@@ -50,29 +50,60 @@ pub fn parse_input(f: &str) -> Input {
 }
 
 pub struct Output {
-    pub c: Vec<usize>,
-    pub d: Vec<usize>,
-    pub v: usize,
-    pub t: Vec<usize>,
-    pub r: Vec<usize>,
+    pub val: Vec<OutputCore>
+}
+
+pub struct OutputCore {
+    pub x: i64,
+    pub y: i64,
+    pub v_x: f64,
+    pub v_y: f64,
+    pub score: i64
 }
 
 pub fn parse_output(f: &str, m: usize) -> Output {
-    // let f = proconio::source::once::OnceSource::from(f);
-    // input! {
-    //     from f,
-    //     cd: [(usize, usize); m],
-    //     v: usize,
-    //     tr: [(usize, usize); v]
-    // }
-    // let c = cd.iter().map(|(c, _)| *c).collect::<Vec<_>>();
-    // let d = cd.iter().map(|(_, d)| *d).collect::<Vec<_>>();
-    // let t = tr.iter().map(|(t, _)| *t).collect::<Vec<_>>();
-    // let r = tr.iter().map(|(_, r)| *r).collect::<Vec<_>>();
-    
-    // Output { c, d, v, t, r }
-    let tmp = vec![1; 1];
-    Output { c: tmp.clone(), d: tmp.clone(), v: 1, t: tmp.clone(), r: tmp.clone() }
+    let mut outputs = Output {val: Vec::new() };
+    let mut current_output = OutputCore {
+        x: 0,
+        y: 0,
+        v_x: 0.0,
+        v_y: 0.0,
+        score: 0,
+    };
+
+    for line in f.lines() {
+        let parts: Vec<&str> = line.split_whitespace().collect();
+        if parts.is_empty() {
+            continue;
+        }
+
+        if parts[0].starts_with('#') {
+            match parts[0] {
+                "#p" => {
+                    current_output.x = parts[1].parse().unwrap();
+                    current_output.y = parts[2].parse().unwrap();
+                }
+                "#v" => {
+                    current_output.v_x = parts[1].parse().unwrap();
+                    current_output.v_y = parts[2].parse().unwrap();
+                }
+                "#s" => {
+                    current_output.score = parts[1].parse().unwrap();
+                    outputs.val.push(current_output);
+                    current_output = OutputCore {
+                        x: 0,
+                        y: 0,
+                        v_x: 0.0,
+                        v_y: 0.0,
+                        score: 0,
+                    };
+                }
+                _ => {}
+            }
+        }
+    }
+
+    outputs
 }
 
 pub fn gen(seed: u64) -> Input {
@@ -132,7 +163,7 @@ pub fn pos_convert(x: i64, y: i64, scale: f32) -> (f32, f32) {
 }
 
 pub fn vis(input: &Input, output: &Output, turn: usize) -> (i64, String, String) {
-    let score = 777777777;
+    let mut score = 0;
 
     // Canvasの設定
     let scale = 0.005;
@@ -147,7 +178,21 @@ pub fn vis(input: &Input, output: &Output, turn: usize) -> (i64, String, String)
 
     let drone_size = 10.0;
 
-    let (drone_start_x, drone_start_y) = pos_convert(input.sx, input.sy, scale);
+    let mut droneX = 0.0;
+    let mut droneY = 0.0;
+    if turn == 0 {
+        let (drone_start_x, drone_start_y) = pos_convert(input.sx, input.sy, scale);
+        droneX = drone_start_x;
+        droneY = drone_start_y;
+    }
+    else {
+        if let Some(o) = output.val.get(turn-1) {
+            let (drone_start_x, drone_start_y) = pos_convert(o.x, o.y, scale);
+            droneX = drone_start_x;
+            droneY = drone_start_y;
+            score = o.score;
+        }
+    }
 
     // ドローンの要素を追加
     doc = doc.add(
@@ -157,8 +202,8 @@ pub fn vis(input: &Input, output: &Output, turn: usize) -> (i64, String, String)
             .set("fill", "#ff0000")
             .set("stroke", "black")
             .set("stroke-width", 1)
-            .set("x", drone_start_x)
-            .set("y", drone_start_y)
+            .set("x", droneX)
+            .set("y", droneY)
             .set("id", "drone")
     );
 
