@@ -222,9 +222,10 @@ pub fn parse_output(f: &str, initialBoard: Board) -> Output {
 					let currentObjPos = objPos;
 					let newObjPos = move_coordinate(objPos, Direction::from_str(parts[1]));
 
-					(h, w) = newObjPos;
-					let nobj = board[h][w];
-					if h >= 20 || w >= 20 || h == 0 || w == 0 {
+					(h, w) = currentObjPos;
+					let (nh, nw) = newObjPos;
+					let dir = Direction::from_str(parts[1]);
+					if nh >= 20 || nw >= 20  || (h == 0 && dir == Direction::D) || (w == 0 && dir == Direction::L) {
 						if playerPos != currentObjPos {
 							(h, w) = currentObjPos;
 							if now == '%' {
@@ -245,7 +246,9 @@ pub fn parse_output(f: &str, initialBoard: Board) -> Output {
 						}
 						break;
 					}
-					else if nobj == 'A' || nobj == 'B' || nobj == 'C' {
+
+					let nobj = board[h][w];
+					if nobj == 'A' || nobj == 'B' || nobj == 'C' {
 						break;
 					}
 					else if nobj == 'a' || nobj == 'b' || nobj == 'c' || nobj == '@' {
