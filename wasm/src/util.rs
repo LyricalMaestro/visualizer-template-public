@@ -160,9 +160,7 @@ pub fn parse_output(f: &str, initialBoard: Board) -> Output {
 					board[h][w] = '.';
 				}
 
-				let (ph, pw) = playerPos;
-				h = ph; w = pw;
-
+				(h, w) = playerPos;
 				if board[h][w] == 'a' {
 					board[h][w] = '%';
 				}
@@ -189,6 +187,31 @@ pub fn parse_output(f: &str, initialBoard: Board) -> Output {
 				}
 			}
 			"2" => {
+				let objPos = move_coordinate(playerPos, Direction::from_str(parts[1]));
+				let (mut h, mut w) = playerPos;
+				let now = board[h][w];
+				board[h][w] = 'P';
+
+				(h, w) = objPos;
+				let nobj = board[h][w];
+				if nobj == 'A' || nobj == 'B' || nobj == 'C' {
+					// 取り除かれる
+				}
+				else if now == '%' {
+					board[h][w] = 'a';
+				}
+				else if now == '%' {
+					board[h][w] = 'a';
+				}
+				else if now == '&' {
+					board[h][w] = 'b';
+				}
+				else if now == '*' {
+					board[h][w] = 'c';
+				}
+				else if now == '#' {
+					board[h][w] = '@';
+				}
 			}
 			"3" => {
 			}
