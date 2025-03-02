@@ -190,30 +190,87 @@ pub fn parse_output(f: &str, initialBoard: Board) -> Output {
 				let objPos = move_coordinate(playerPos, Direction::from_str(parts[1]));
 				let (mut h, mut w) = playerPos;
 				let now = board[h][w];
-				board[h][w] = 'P';
+				board[h][w] = '.';
+
+				playerPos = objPos;
 
 				(h, w) = objPos;
 				let nobj = board[h][w];
 				if nobj == 'A' || nobj == 'B' || nobj == 'C' {
 					// 取り除かれる
+					if nobj == 'A' {
+						board[h][w] = 'X';
+					}
+					else if nobj == 'B' {
+						board[h][w] = 'Y';
+					}
+					else if nobj == 'C' {
+						board[h][w] = 'Z';
+					}
 				}
-				else if now == '%' {
-					board[h][w] = 'a';
-				}
-				else if now == '%' {
-					board[h][w] = 'a';
-				}
-				else if now == '&' {
-					board[h][w] = 'b';
-				}
-				else if now == '*' {
-					board[h][w] = 'c';
-				}
-				else if now == '#' {
-					board[h][w] = '@';
+				else {
+					board[h][w] = now;
 				}
 			}
 			"3" => {
+				let (mut h, mut w) = playerPos;
+				let now = board[h][w];
+				board[h][w] = 'P';
+
+				let mut objPos = move_coordinate(playerPos, Direction::from_str(parts[1]));
+				loop {
+					let currentObjPos = objPos;
+					let newObjPos = move_coordinate(objPos, Direction::from_str(parts[1]));
+
+					(h, w) = newObjPos;
+					let nobj = board[h][w];
+					if h <= 20 || w <= 20 || h < 0 || w < 0 {
+						if playerPos != currentObjPos {
+							(h, w) = currentObjPos;
+							if now == '%' {
+								board[h][w] = 'a';
+							}
+							else if now == '%' {
+								board[h][w] = 'a';
+							}
+							else if now == '&' {
+								board[h][w] = 'b';
+							}
+							else if now == '*' {
+								board[h][w] = 'c';
+							}
+							else if now == '#' {
+								board[h][w] = '@';
+							}
+						}
+						break;
+					}
+					else if nobj == 'A' || nobj == 'B' || nobj == 'C' {
+						break;
+					}
+					else if nobj == 'a' || nobj == 'b' || nobj == 'c' || nobj == '@' {
+						if playerPos != currentObjPos {
+							(h, w) = currentObjPos;
+							if now == '%' {
+								board[h][w] = 'a';
+							}
+							else if now == '%' {
+								board[h][w] = 'a';
+							}
+							else if now == '&' {
+								board[h][w] = 'b';
+							}
+							else if now == '*' {
+								board[h][w] = 'c';
+							}
+							else if now == '#' {
+								board[h][w] = '@';
+							}
+						}
+						break;
+					}
+				}
+
 			}
 			_ => {}
 		}
