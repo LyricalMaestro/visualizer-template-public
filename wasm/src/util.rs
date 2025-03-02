@@ -224,7 +224,7 @@ pub fn parse_output(f: &str, initialBoard: Board) -> Output {
 
 					(h, w) = newObjPos;
 					let nobj = board[h][w];
-					if h <= 20 || w <= 20 || h < 0 || w < 0 {
+					if h >= 20 || w >= 20 || h == 0 || w == 0 {
 						if playerPos != currentObjPos {
 							(h, w) = currentObjPos;
 							if now == '%' {
@@ -269,6 +269,7 @@ pub fn parse_output(f: &str, initialBoard: Board) -> Output {
 						}
 						break;
 					}
+					objPos = newObjPos;
 				}
 
 			}
