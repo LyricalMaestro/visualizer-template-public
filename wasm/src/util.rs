@@ -73,7 +73,7 @@ pub fn find_a_position(board: Board) -> (usize, usize) {
 	for (row_index, row) in board.iter().enumerate() {
 		for (col_index, cell) in row.iter().enumerate() {
 			if *cell == 'A' || *cell == 'X' {
-				return (col_index, row_index);
+				return (row_index, col_index);
 			}
 		}
 	}
@@ -114,7 +114,7 @@ pub fn parse_output(f: &str, initialBoard: Board) -> Output {
     let mut outputs = Output {val: Vec::new() };
 	outputs.val.push(initialBoard.clone());
 
-	let mut currentBoard = initialBoard.clone();
+	let mut lastBoard = initialBoard.clone();
 
 	let mut playerPos = find_a_position(initialBoard);
 
@@ -124,16 +124,15 @@ pub fn parse_output(f: &str, initialBoard: Board) -> Output {
 			continue;
 		}
 
-		let mut board = currentBoard.clone();
+		let mut board = lastBoard.clone();
 
 		match parts[0] {
 			"1" => {
 				let prevPos = playerPos;
-				let (h, w) = prevPos;
-				if board[h][w] == 'P' {
-					board[h][w] = '.';
-				}
-				else if board[h][w] == 'X' {
+				let (mut h, mut w) = prevPos;
+				playerPos = move_coordinate(playerPos, Direction::from_str(parts[1]));
+
+				if board[h][w] == 'X' {
 					board[h][w] = 'A';
 				}
 				else if board[h][w] == 'Y' {
@@ -157,7 +156,37 @@ pub fn parse_output(f: &str, initialBoard: Board) -> Output {
 				else if board[h][w] == '#' {
 					board[h][w] = '@';
 				}
-				move_coordinate(playerPos, Direction::from_str(parts[1]));
+				else {
+					board[h][w] = '.';
+				}
+
+				let (ph, pw) = playerPos;
+				h = ph; w = pw;
+
+				if board[h][w] == 'a' {
+					board[h][w] = '%';
+				}
+				else if board[h][w] == 'b' {
+					board[h][w] = '&';
+				}
+				else if board[h][w] == 'c' {
+					board[h][w] = '*';
+				}
+				else if board[h][w] == 'A' {
+					board[h][w] = 'X';
+				}
+				else if board[h][w] == 'B' {
+					board[h][w] = 'Y';
+				}
+				else if board[h][w] == 'C' {
+					board[h][w] = 'Z';
+				}
+				else if board[h][w] == '@' {
+					board[h][w] = '#';
+				}
+				else {
+					board[h][w] = 'P';
+				}
 			}
 			"2" => {
 			}
@@ -165,6 +194,9 @@ pub fn parse_output(f: &str, initialBoard: Board) -> Output {
 			}
 			_ => {}
 		}
+
+		outputs.val.push(board.clone());
+		lastBoard = board;
 	}
 
 	outputs
